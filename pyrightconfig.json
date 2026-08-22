@@ -1,0 +1,4 @@
+{
+  "include": ["src", "scripts"],
+  "reportMissingImports": false
+}
