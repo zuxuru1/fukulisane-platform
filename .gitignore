@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Database
+prisma/dev.db
+prisma/dev.db-shm
+prisma/dev.db-wal
+*.db
+*.db-shm
+*.db-wal
+
+# Editor
+.vscode/
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Logs
+logs/
+*.log
+
+# Runtime (generated)
+.shogo/
+.cursor/
+
+# Agent workspace
+memory/
+
+# Uploaded files
+files/
+
+# Export archives
+export/
+*.tar.gz
+
+# Build artifacts
+*.tsbuildinfo
+
+# Lock files
+package-lock.json
