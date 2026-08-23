@@ -1,13 +1,106 @@
-import * as React from 'react'
-import * as SelectPrimitive from '@radix-ui/react-select'
-import { Check, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState, createContext, useContext, useRef, useEffect, type HTMLAttributes, type ReactNode } from 'react'
 import { cn } from '@/lib/cn'
-const Select = SelectPrimitive.Root
-const SelectGroup = SelectPrimitive.Group
-const SelectValue = SelectPrimitive.Value
-const SelectTrigger = React.forwardRef<...>(({ className, children, ...props }, ref) => <SelectPrimitive.Trigger ref={ref} className={cn('flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50', className)} {...props}><>{children}</><SelectPrimitive.Icon asChild><ChevronDown className='h-4 w-4 opacity-50' /></SelectPrimitive.Icon></SelectPrimitive.Trigger>)
-const SelectContent = React.forwardRef<...>(({ className, children, position = 'popper', ...props }, ref) => <SelectPrimitive.Portal><SelectPrimitive.Content ref={ref} className={cn('relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md', className)} position={position} {...props}><SelectPrimitive.Viewport className={cn('p-1', position === 'popper' && 'h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]')}>{children}</SelectPrimitive.Viewport></SelectPrimitive.Content></SelectPrimitive.Portal>)
-const SelectLabel = React.forwardRef<...>(({ className, ...props }, ref) => <SelectPrimitive.Label ref={ref} className={cn('py-1.5 pl-8 pr-2 text-sm font-semibold', className)} {...props} />)
-const SelectItem = React.forwardRef<...>(({ className, children, ...props }, ref) => <SelectPrimitive.Item ref={ref} className={cn('relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground', className)} {...props}><span className='absolute left-2 flex h-3.5 w-3.5 items-center justify-center'><SelectPrimitive.ItemIndicator><Check className='h-4 w-4' /></SelectPrimitive.ItemIndicator></span><SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText></SelectPrimitive.Item>)
-const SelectSeparator = React.forwardRef<...>(({ className, ...props }, ref) => <SelectPrimitive.Separator ref={ref} className={cn('-mx-1 my-1 h-px bg-muted', className)} {...props} />)
-export { Select, SelectGroup, SelectValue, SelectTrigger, SelectContent, SelectLabel, SelectItem, SelectSeparator }
+import { ChevronDown } from 'lucide-react'
+
+const SelectContext = createContext<{
+  value: string
+  onValueChange: (v: string) => void
+  open: boolean
+  setOpen: (v: boolean) => void
+}>({ value: '', onValueChange: () => {}, open: false, setOpen: () => {} })
+
+interface SelectProps {
+  value?: string
+  defaultValue?: string
+  onValueChange?: (value: string) => void
+  children?: ReactNode
+}
+
+export function Select({ value: controlledValue, defaultValue = '', onValueChange, children }: SelectProps) {
+  const [internalValue, setInternalValue] = useState(defaultValue)
+  const [open, setOpen] = useState(false)
+  const value = controlledValue ?? internalValue
+  const handleChange = (v: string) => {
+    setInternalValue(v)
+    onValueChange?.(v)
+    setOpen(false)
+  }
+
+  return (
+    <SelectContext.Provider value={{ value, onValueChange: handleChange, open, setOpen }}>
+      <div className="relative">{children}</div>
+    </SelectContext.Provider>
+  )
+}
+
+export function SelectTrigger({ className, children, ...props }: HTMLAttributes<HTMLButtonElement>) {
+  const { open, setOpen } = useContext(SelectContext)
+  return (
+    <button
+      className={cn(
+        'flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring',
+        className,
+      )}
+      onClick={() => setOpen(!open)}
+      {...props}
+    >
+      {children}
+      <ChevronDown size={16} className="opacity-50" />
+    </button>
+  )
+}
+
+export function SelectValue({ placeholder }: { placeholder?: string }) {
+  const { value } = useContext(SelectContext)
+  return <span className={cn(!value && 'text-muted-foreground')}>{value || placeholder}</span>
+}
+
+export function SelectContent({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+  const { open, setOpen } = useContext(SelectContext)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open, setOpen])
+
+  if (!open) return null
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        'absolute z-50 mt-1 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+interface SelectItemProps extends HTMLAttributes<HTMLDivElement> {
+  value: string
+}
+
+export function SelectItem({ value, className, children, ...props }: SelectItemProps) {
+  const ctx = useContext(SelectContext)
+  return (
+    <div
+      className={cn(
+        'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent',
+        ctx.value === value && 'bg-accent',
+        className,
+      )}
+      onClick={() => ctx.onValueChange(value)}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
