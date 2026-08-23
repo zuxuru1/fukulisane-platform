@@ -1,0 +1,1128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  businesses Business[]
+
+  @@map("users")
+}
+
+model Business {
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  slug        String   @unique
+  description String?
+  category    String?
+  logoUrl     String?
+  coverUrl    String?
+  videoUrl    String?
+  address     String?
+  city        String?
+  country     String?
+  phone       String?
+  email       String?
+  website     String?
+  whatsapp    String?
+  googleMapsUrl String?
+  latitude    Float?
+  longitude   Float?
+  openingHours String?
+  businessPhotoUrl String?
+  galleryDescription String?
+  tagline      String?
+  brandStory   String?
+  primaryColor String?
+  secondaryColor String?
+  accentColor  String?
+  deliveryFee  Float?
+  minOrder     Float?
+  acceptDelivery Boolean @default(false)
+  acceptPickup Boolean @default(true)
+  storeStatus  String   @default("draft")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user         User          @relation(fields: [userId], references: [id])
+  socialLinks  SocialLink[]
+  products     Product[]
+  inquiries    Inquiry[]
+  coachMessages    CoachMessage[]
+  translationLogs  TranslationLog[]
+  specials         Special[]
+  visibilityActions VisibilityAction[]
+  demandSignals    DemandSignal[]
+  sales            Sale[]
+  galleryImages    GalleryImage[]
+
+  orders           Order[]
+  plugins          Plugin[]
+  members          GymMember[]
+  trainers         Trainer[]
+  staff            Staff[]
+  aiAgents         AIAgent[]
+  healthMetrics    HealthMetric[]
+  aiInsights       AIInsight[]
+  customerProfiles CustomerProfile[]
+  leads            Lead[]
+  invoices         Invoice[]
+
+  engineEvents     EngineEvent[]
+  roiMetrics       ROIMetric[]
+  approvals        Approval[]
+  automations      Automation[]
+  businessDNA      BusinessDNA?
+  industryPacks    IndustryPack[]
+  @@map("businesses")
+  projects        Project[]
+  testimonials    Testimonial[]
+  services        Service[]
+  quoteRequests   QuoteRequest[]
+
+  systemModules    SystemModule[]
+  aiModelConfigs   AIModelConfig[]
+  serviceHealth    ServiceHealth[]
+
+  marketingCampaigns MarketingCampaign[]
+  brandAssets        BrandAsset[]
+  businessSubscriptions BusinessSubscription[]
+  localListings      LocalListing[]
+  seoRecords         SEORecord[]
+
+  wizardEngines    WizardEngine[]
+  contentPosts     ContentPost[]
+  kpiTargets       KPITarget[]
+  posts            Post[]
+
+  teamUsers        TeamUser[]
+  auditLogs        AuditLog[]
+  apiKeys          ApiKey[]
+  securitySettings SecuritySetting[]
+  systemMetrics    SystemMetric[]
+  connections      Connection[]
+}
+
+model GymMember {
+  id              String   @id @default(cuid())
+  businessId      String
+  firstName       String
+  lastName        String
+  email           String?
+  phone           String?
+  membershipType  String   @default("standard")
+  status          String   @default("active")
+  joinDate        DateTime @default(now()) @map("join_date")
+  lastVisit       DateTime? @map("last_visit")
+  attendanceCount Int      @default(0)
+  totalSpent      Float    @default(0)
+  healthScore     Float    @default(80)
+  churnRisk       Float    @default(0)
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("gym_members")
+}
+
+model Trainer {
+  id            String   @id @default(cuid())
+  businessId    String
+  firstName     String
+  lastName      String
+  email         String?
+  phone         String?
+  specialization String?
+  certification String?
+  status        String   @default("active")
+  hourlyRate    Float?
+  utilization   Float    @default(0)
+  rating        Float    @default(5)
+  clientCount   Int      @default(0)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("trainers")
+}
+
+model Staff {
+  id         String   @id @default(cuid())
+  businessId String
+  firstName  String
+  lastName   String
+  email      String?
+  phone      String?
+  role       String
+  department String?
+  status     String   @default("active")
+  shift      String?
+  hourlyRate Float?
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("staff")
+}
+
+model AIAgent {
+  id            String   @id @default(cuid())
+  businessId    String
+  name          String
+  type          String
+  status        String   @default("idle")
+  actionsToday  Int      @default(0)
+  totalActions  Int      @default(0)
+  lastAction    String?
+  lastActiveAt  DateTime? @map("last_active_at")
+  impact        String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("ai_agents")
+}
+
+model HealthMetric {
+  id         String   @id @default(cuid())
+  businessId String
+  metricName String
+  value      Float
+  unit       String?
+  status     String   @default("healthy")
+  trend      Float    @default(0)
+  period     String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("health_metrics")
+}
+
+model AIInsight {
+  id          String   @id @default(cuid())
+  businessId  String
+  type        String
+  title       String
+  description String
+  priority    String   @default("medium")
+  category    String?
+  impact      String?
+  status      String   @default("active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("ai_insights")
+}
+
+model CustomerProfile {
+  id              String   @id @default(cuid())
+  businessId      String
+  memberId        String?
+  source          String
+  socialPlatform  String?
+  socialHandle    String?
+  location        String?
+  interests       String?
+  engagementScore Float    @default(0)
+  lifetimeValue   Float    @default(0)
+  lastInteraction DateTime? @map("last_interaction")
+  tags            String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("customer_profiles")
+}
+
+model Lead {
+  id            String    @id @default(cuid())
+  businessId    String
+  name          String
+  email         String?
+  phone         String?
+  source        String?
+  service       String?
+  status        String    @default("new")
+  score         Float     @default(0)
+  stage         String    @default("discovery")
+  priority      String    @default("new_lead")
+  estimatedValue Float?
+  probability   Float     @default(0)
+  nextAction    String?
+  lastActivity  String?
+  notes         String?
+  assignedTo    String?
+  convertedAt   DateTime? @map("converted_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  business   Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  activities LeadActivity[]
+
+  @@map("leads")
+}
+
+model LeadActivity {
+  id        String   @id @default(cuid())
+  leadId    String
+  action    String
+  points    Float
+  category  String?
+  metadata  String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  lead Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@map("lead_activities")
+}
+
+model SocialLink {
+  id         String  @id @default(cuid())
+  businessId String
+  platform   String
+  url        String
+  isActive   Boolean @default(true)
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("social_links")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  businessId  String
+  name        String
+  description String?
+  price       Float
+  imageUrl    String?
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("products")
+}
+
+model Inquiry {
+  id         String   @id @default(cuid())
+  businessId String
+  name       String?
+  phone      String?
+  message    String
+  source     String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("inquiries")
+}
+
+model Subscription {
+  id        String   @id @default(cuid())
+  userId    String
+  plan      String   @default("starter")
+  amount    Float    @default(0)
+  currency  String   @default("USD")
+  status    String   @default("active")
+  startDate DateTime @default(now()) @map("start_date")
+  endDate   DateTime? @map("end_date")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("subscriptions")
+}
+
+model CoachMessage {
+  id         String   @id @default(cuid())
+  businessId String
+  role       String
+  content    String
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("coach_messages")
+}
+
+model TranslationLog {
+  id             String   @id @default(cuid())
+  businessId     String
+  sourceText     String   @map("source_text")
+  sourceLang     String   @map("source_lang")
+  targetLang     String   @map("target_lang")
+  translatedText String   @map("translated_text")
+  fieldType      String?  @map("field_type")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("translation_logs")
+}
+
+model Special {
+  id          String   @id @default(cuid())
+  businessId  String
+  title       String
+  description String?
+  discountType String  @default("percentage")
+  discountValue Float
+  minPurchase Float?
+  productIds  String?
+  startDate   DateTime @map("start_date")
+  endDate     DateTime @map("end_date")
+  isActive    Boolean  @default(true)
+  autoShare   Boolean  @default(false)
+  views       Int      @default(0)
+  clicks      Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("specials")
+}
+
+model VisibilityAction {
+  id         String   @id @default(cuid())
+  businessId String
+  actionType String
+  platform   String?
+  content    String?
+  status     String   @default("pending")
+  metrics    String?
+  scheduledAt DateTime? @map("scheduled_at")
+  executedAt DateTime?  @map("executed_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("visibility_actions")
+}
+
+model DemandSignal {
+  id          String   @id @default(cuid())
+  businessId  String
+  productName String?
+  signalType  String
+  source      String?
+  strength    Float    @default(0.5)
+  data        String?
+  period      String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("demand_signals")
+}
+
+model Sale {
+  id         String   @id @default(cuid())
+  businessId String
+  productName String
+  quantity   Int      @default(1)
+  unitPrice  Float
+  total      Float
+  note       String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("sales")
+}
+
+model GalleryImage {
+  id         String  @id @default(cuid())
+  businessId String
+  imageUrl   String
+  caption    String?
+  sortOrder  Int     @default(0)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("gallery_images")
+}
+
+model Invoice {
+  id          String   @id @default(cuid())
+  businessId  String
+  number      String
+  clientName  String
+  clientPhone String?
+  clientEmail String?
+  items       String
+  subtotal    Float
+  tax         Float    @default(0)
+  total       Float
+  status      String   @default("draft")
+  dueDate     DateTime?
+  paidDate    DateTime?
+  note        String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("invoices")
+}
+
+model Order {
+  id             String   @id @default(cuid())
+  businessId     String
+  orderNumber    String
+  customerName   String?
+  customerPhone  String?
+  customerEmail  String?
+  customerAddress String?
+  items          String
+  subtotal       Float
+  deliveryFee    Float   @default(0)
+  total          Float
+  status         String   @default("pending")
+  deliveryMethod String   @default("pickup")
+  paymentMethod  String?
+  paymentStatus  String   @default("unpaid")
+  note           String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("orders")
+}
+
+model Plugin {
+  id              String    @id @default(cuid())
+  name            String
+  slug            String    @unique
+  description     String?
+  category        String
+  icon            String?
+  config          String?
+  isEnabled       Boolean   @default(false)
+  apiKey          String?
+  businessId      String
+  version         String    @default("1.0.0")
+  provider        String?
+  status          String    @default("available")
+  permissions     String?
+  connectedServices String?
+  availableActions  String?
+  lastSyncedAt    DateTime? @map("last_synced_at")
+  healthScore     Float     @default(100)
+  apiCallsUsed    Int       @default(0)
+  apiCallsLimit   Int       @default(1000)
+  monthlyCost     Float     @default(0)
+  rating          Float     @default(0)
+  installCount    Int       @default(0)
+  updateAvailable Boolean   @default(false)
+  latestVersion   String?
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("plugins")
+}
+
+model MarketplaceModule {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String
+  description     String
+  category        String
+  subcategory     String?
+  provider        String
+  version         String   @default("1.0.0")
+  icon            String?
+  color           String?
+  price           Float    @default(0)
+  isFree          Boolean  @default(true)
+  rating          Float    @default(0)
+  reviewCount     Int      @default(0)
+  installCount    Int      @default(0)
+  permissions     String?
+  actions         String?
+  requiredTier    String?
+  isCompatible    Boolean  @default(true)
+  isFeatured      Boolean  @default(false)
+  tags            String?
+  changelog       String?
+  documentation   String?
+  website         String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("marketplace_modules")
+}
+
+model EngineEvent {
+  id           String   @id @default(cuid())
+  businessId   String
+  engine       String
+  eventType    String
+  title        String
+  description  String?
+  sourceEngine String?
+  targetEngine String?
+  payload      String?
+  status       String   @default("active")
+  impactScore  Float    @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("engine_events")
+}
+
+model ROIMetric {
+  id           String   @id @default(cuid())
+  businessId   String
+  engine       String
+  actionType   String
+  description  String
+  estimatedROI Float
+  actualROI    Float?
+  invested     Float    @default(0)
+  returned     Float    @default(0)
+  status       String   @default("estimated")
+  period       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  measuredAt   DateTime? @map("measured_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("roi_metrics")
+}
+
+model Approval {
+  id           String   @id @default(cuid())
+  businessId   String
+  engine       String
+  actionType   String
+  title        String
+  description  String
+  riskLevel    String   @default("low")
+  autoAction   String?
+  status       String   @default("pending")
+  decidedAt    DateTime? @map("decided_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("approvals")
+}
+
+model Automation {
+  id           String   @id @default(cuid())
+  businessId   String
+  name         String
+  slug         String
+  description  String
+  category     String
+  triggerType  String
+  triggerData  String?
+  actionType   String
+  actionData   String?
+  isEnabled    Boolean  @default(false)
+  runCount     Int      @default(0)
+  lastRunAt    DateTime? @map("last_run_at")
+  icon         String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("automations")
+}
+
+model BusinessDNA {
+  id           String   @id @default(cuid())
+  businessId   String   @unique
+  mission      String?
+  vision       String?
+  values       String?
+  targetAudience String?
+  brandVoice   String?
+  competencies String?
+  usp          String?
+  goals        String?
+  painPoints   String?
+  strengths    String?
+  learningData String?
+  lastLearned  DateTime? @map("last_learned")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("business_dna")
+}
+
+model IndustryPack {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  industry     String
+  description  String
+  features     String
+  workflows    String
+  dashboards   String
+  kpis         String
+  isInstalled  Boolean  @default(false)
+  businessId   String?
+  icon         String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  business Business? @relation(fields: [businessId], references: [id], onDelete: SetNull)
+
+  @@map("industry_packs")
+}
+
+model SystemModule {
+  id          String   @id @default(cuid())
+  businessId  String
+  moduleSlug  String
+  moduleName  String
+  category    String
+  status      String   @default("active")
+  isEnabled   Boolean  @default(true)
+  config      String?
+  lastCheckAt DateTime? @map("last_check_at")
+  metrics     String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, moduleSlug])
+  @@map("system_modules")
+}
+
+model AIModelConfig {
+  id           String   @id @default(cuid())
+  businessId   String
+  modelSlug    String
+  modelName    String
+  provider     String
+  assignedTo   String
+  isEnabled    Boolean  @default(false)
+  config       String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, modelSlug, assignedTo])
+  @@map("ai_model_configs")
+}
+
+model ServiceHealth {
+  id           String   @id @default(cuid())
+  businessId   String
+  serviceSlug  String
+  serviceName  String
+  category     String
+  uptime       Float    @default(99.9)
+  responseMs   Int      @default(0)
+  errorRate    Float    @default(0)
+  trafficLoad  Float    @default(0)
+  status       String   @default("healthy")
+  lastChecked  DateTime @default(now()) @map("last_checked")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, serviceSlug])
+  @@map("service_health")
+}
+
+model Post {
+  id           String   @id @default(cuid())
+  businessId   String
+  title        String
+  content      String
+  imageUrl     String?
+  category     String   @default("update")
+  status       String   @default("published")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("posts")
+}
+
+model WizardEngine {
+  id          String    @id @default(cuid())
+  businessId  String
+  stepNumber  Int
+  stepSlug    String
+  title       String
+  status      String    @default("pending")
+  config      String?
+  output      String?
+  lastRunAt   DateTime? @map("last_run_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, stepNumber])
+  @@map("wizard_engines")
+}
+
+model ContentPost {
+  id           String    @id @default(cuid())
+  businessId   String
+  platform     String
+  dayOfWeek    String
+  contentType  String
+  caption      String
+  hashtags     String?
+  imageUrl     String?
+  status       String    @default("draft")
+  scheduledAt  DateTime? @map("scheduled_at")
+  publishedAt  DateTime? @map("published_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("content_posts")
+}
+
+model KPITarget {
+  id           String   @id @default(cuid())
+  businessId   String
+  metricName   String
+  targetValue  Float
+  actualValue  Float    @default(0)
+  unit         String?
+  period       String
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, metricName, period])
+  @@map("kpi_targets")
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  businessId   String
+  title        String
+  description  String?
+  category     String?
+  location     String?
+  imageUrl     String?
+  beforeUrl    String?
+  afterUrl     String?
+  budget       Float?
+  completedAt  DateTime? @map("completed_at")
+  isFeatured   Boolean  @default(false)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("projects")
+}
+
+model Testimonial {
+  id           String   @id @default(cuid())
+  businessId   String
+  clientName   String   @map("client_name")
+  clientPhone  String?  @map("client_phone")
+  projectName  String?  @map("project_name")
+  rating       Int      @default(5)
+  content      String
+  imageUrl     String?
+  isPublished  Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("testimonials")
+}
+
+model Service {
+  id           String   @id @default(cuid())
+  businessId   String
+  name         String
+  description  String?
+  category     String?
+  icon         String?
+  priceRange   String?
+  imageUrl     String?
+  isPublished  Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("services")
+}
+
+model QuoteRequest {
+  id             String   @id @default(cuid())
+  businessId     String
+  clientName     String   @map("client_name")
+  clientPhone    String   @map("client_phone")
+  clientEmail    String?  @map("client_email")
+  serviceType    String?  @map("service_type")
+  projectDesc    String?  @map("project_desc")
+  address        String?
+  budget         String?
+  preferredDate  String?  @map("preferred_date")
+  status         String   @default("new")
+  notes          String?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("quote_requests")
+}
+
+model MarketingCampaign {
+  id           String   @id @default(cuid())
+  businessId   String
+  name         String
+  type         String
+  channel      String
+  status       String   @default("draft")
+  budget       Float    @default(0)
+  spent        Float    @default(0)
+  impressions  Int      @default(0)
+  clicks       Int      @default(0)
+  leads        Int      @default(0)
+  conversions  Int      @default(0)
+  content      String?
+  targetAudience String?
+  startDate    DateTime? @map("start_date")
+  endDate      DateTime? @map("end_date")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("marketing_campaigns")
+}
+
+model BrandAsset {
+  id           String   @id @default(cuid())
+  businessId   String
+  name         String
+  type         String
+  category     String
+  content      String?
+  fileUrl      String?
+  metadata     String?
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("brand_assets")
+}
+
+model SubscriptionPlan {
+  id           String   @id @default(cuid())
+  name         String
+  slug         String   @unique
+  description  String?
+  price        Float
+  currency     String   @default("ZAR")
+  interval     String   @default("monthly")
+  features     String
+  maxProducts  Int      @default(10)
+  maxOrders    Int      @default(50)
+  maxAiAgents  Int      @default(2)
+  isPopular    Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  businessSubscriptions BusinessSubscription[]
+  @@map("subscription_plans")
+}
+
+model BusinessSubscription {
+  id           String   @id @default(cuid())
+  businessId   String
+  planId       String
+  status       String   @default("active")
+  startDate    DateTime @default(now()) @map("start_date")
+  endDate      DateTime? @map("end_date")
+  autoRenew    Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  business  Business         @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  plan      SubscriptionPlan @relation(fields: [planId], references: [id])
+
+  @@map("business_subscriptions")
+}
+
+model LocalListing {
+  id           String   @id @default(cuid())
+  businessId   String
+  platform     String
+  listingUrl   String?
+  status       String   @default("pending")
+  verifiedAt   DateTime? @map("verified_at")
+  rating       Float?
+  reviewCount  Int      @default(0)
+  metadata     String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, platform])
+  @@map("local_listings")
+}
+
+model SEORecord {
+  id           String   @id @default(cuid())
+  businessId   String
+  page         String
+  title        String?
+  description  String?
+  keywords     String?
+  score        Float    @default(0)
+  lastChecked  DateTime @default(now()) @map("admin_checked")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, page])
+  @@map("seo_records")
+}
+
+model TeamUser {
+  id         String   @id @default(cuid())
+  businessId String
+  name       String
+  email      String
+  role       String   @default("viewer")
+  status     String   @default("active")
+  lastActive DateTime? @map("last_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, email])
+  @@map("team_users")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  businessId String
+  action     String
+  targetType String   @map("target_type")
+  target     String
+  userId     String?
+  userName   String   @default("System")
+  type       String   @default("update")
+  metadata   String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("audit_logs")
+}
+
+model ApiKey {
+  id           String   @id @default(cuid())
+  businessId   String
+  name         String
+  keyHash      String   @unique @map("key_hash")
+  keyPrefix    String   @map("key_prefix")
+  status       String   @default("active")
+  permissions  String   @default("read")
+  callsUsed    Int      @default(0) @map("calls_used")
+  callsLimit   Int      @default(10000) @map("calls_limit")
+  lastUsedAt   DateTime? @map("last_used_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("api_keys")
+}
+
+model SecuritySetting {
+  id         String   @id @default(cuid())
+  businessId String
+  key        String
+  value      String
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, key])
+  @@map("security_settings")
+}
+
+model SystemMetric {
+  id         String   @id @default(cuid())
+  businessId String
+  metricName String   @map("metric_name")
+  value      Float
+  unit       String?
+  category   String   @default("general")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@map("system_metrics")
+}
+
+model Connection {
+  id             String   @id @default(cuid())
+  businessId     String
+  provider       String
+  displayName    String
+  authType       String
+  status         String   @default("disconnected")
+  providerUrl    String?
+  authUrl        String?
+  redirectUri    String?
+  accessToken    String?
+  refreshToken   String?
+  tokenExpiry    DateTime? @map("token_expiry")
+  apiKey         String?
+  accountEmail   String?  @map("account_email")
+  accountId      String?  @map("account_id")
+  accountName    String?  @map("account_name")
+  permissions    String?
+  scopes         String?
+  lastSyncAt     DateTime? @map("last_sync_at")
+  lastError      String?  @map("last_error")
+  syncCount      Int      @default(0) @map("sync_count")
+  metadata       String?
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  business Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  @@unique([businessId, provider])
+  @@map("connections")
+}
