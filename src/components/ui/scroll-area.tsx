@@ -1,6 +1,24 @@
-import * as React from 'react'
-import { ScrollArea as ScrollAreaPrimitive } from '@radix-ui/react-scroll-area'
+import { type HTMLAttributes, forwardRef } from 'react'
 import { cn } from '@/lib/cn'
-const ScrollArea = React.forwardRef<...>(({ className, children, ...props }, ref) => <ScrollAreaPrimitive.Root ref={ref} className={cn('relative overflow-hidden', className)} {...props}><ScrollAreaPrimitive.Viewport className='h-full w-full rounded-[inherit]'>{children}</ScrollAreaPrimitive.Viewport><ScrollBar /><ScrollAreaPrimitive.Corner /></ScrollAreaPrimitive.Root>)
-const ScrollBar = React.forwardRef<...>(({ className, orientation = 'vertical', ...props }, ref) => <ScrollAreaPrimitive.ScrollAreaScrollbar ref={ref} orientation={orientation} className={cn('flex touch-none select-none transition-colors', orientation === 'vertical' && 'h-full w-2.5 border-l border-l-transparent p-[1px]', orientation === 'horizontal' && 'h-2.5 flex-col border-t border-t-transparent p-[1px]', className)} {...props}><ScrollAreaPrimitive.ScrollAreaThumb className='relative flex-1 rounded-full bg-border' /></ScrollAreaPrimitive.ScrollAreaScrollbar>)
-export { ScrollArea, ScrollBar }
+
+interface ScrollAreaProps extends HTMLAttributes<HTMLDivElement> {
+  orientation?: 'vertical' | 'horizontal' | 'both'
+}
+
+export const ScrollArea = forwardRef<HTMLDivElement, ScrollAreaProps>(
+  ({ className, orientation = 'vertical', children, ...props }, ref) => (
+    <div
+      ref={ref}
+      className={cn(
+        'relative',
+        orientation === 'vertical' && 'overflow-y-auto overflow-x-hidden',
+        orientation === 'horizontal' && 'overflow-x-auto overflow-y-hidden',
+        orientation === 'both' && 'overflow-auto',
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  ),
+)
