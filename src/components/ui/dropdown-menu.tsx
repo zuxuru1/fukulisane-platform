@@ -1,20 +1,73 @@
-import * as React from 'react'
-import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
-import { Check, ChevronRight, Circle } from 'lucide-react'
+import { useState, createContext, useContext, useRef, useEffect, type HTMLAttributes, type ReactNode } from 'react'
 import { cn } from '@/lib/cn'
-const DropdownMenu = DropdownMenuPrimitive.Root
-const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
-const DropdownMenuGroup = DropdownMenuPrimitive.Group
-const DropdownMenuPortal = DropdownMenuPrimitive.Portal
-const DropdownMenuSub = DropdownMenuPrimitive.Sub
-const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup
-const DropdownMenuSubTrigger = React.forwardRef<...>(({ className, inset, children, ...props }, ref) => <DropdownMenuPrimitive.SubTrigger ref={ref} className={cn('flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none focus:bg-accent', className)} {...props}>{children}<ChevronRight className='ml-auto h-4 w-4' /></DropdownMenuPrimitive.SubTrigger>)
-const DropdownMenuSubContent = React.forwardRef<...>(({ className, ...props }, ref) => <DropdownMenuPrimitive.SubContent ref={ref} className={cn('z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-lg', className)} {...props} />)
-const DropdownMenuContent = React.forwardRef<...>(({ className, sideOffset = 4, ...props }, ref) => <DropdownMenuPrimitive.Portal><DropdownMenuPrimitive.Content ref={ref} sideOffset={sideOffset} className={cn('z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md', className)} {...props} /></DropdownMenuPrimitive.Portal>)
-const DropdownMenuItem = React.forwardRef<...>(({ className, inset, ...props }, ref) => <DropdownMenuPrimitive.Item ref={ref} className={cn('relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground', className)} {...props} />)
-const DropdownMenuCheckboxItem = React.forwardRef<...>(({ className, children, checked, ...props }, ref) => <DropdownMenuPrimitive.CheckboxItem ref={ref} className={cn('relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none', className)} {...props}><span className='absolute left-2 flex h-3.5 w-3.5 items-center justify-center'><DropdownMenuPrimitive.ItemIndicator><Check className='h-4 w-4' /></DropdownMenuPrimitive.ItemIndicator></span>{children}</DropdownMenuPrimitive.CheckboxItem>)
-const DropdownMenuRadioItem = React.forwardRef<...>(({ className, children, ...props }, ref) => <DropdownMenuPrimitive.RadioItem ref={ref} className={cn('relative flex cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none', className)} {...props}><span className='absolute left-2 flex h-3.5 w-3.5 items-center justify-center'><DropdownMenuPrimitive.ItemIndicator><Circle className='h-2 w-2 fill-current' /></DropdownMenuPrimitive.ItemIndicator></span>{children}</DropdownMenuPrimitive.RadioItem>)
-const DropdownMenuLabel = React.forwardRef<...>(({ className, inset, ...props }, ref) => <DropdownMenuPrimitive.Label ref={ref} className={cn('px-2 py-1.5 text-sm font-semibold', className)} {...props} />)
-const DropdownMenuSeparator = React.forwardRef<...>(({ className, ...props }, ref) => <DropdownMenuPrimitive.Separator ref={ref} className={cn('-mx-1 my-1 h-px bg-muted', className)} {...props} />)
-const DropdownMenuShortcut = ({ className, ...props }) => <span className={cn('ml-auto text-xs tracking-widest opacity-60', className)} {...props} />
-export { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuGroup, DropdownMenuPortal, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuRadioGroup }
+
+const MenuContext = createContext<{ open: boolean; setOpen: (v: boolean) => void }>({
+  open: false,
+  setOpen: () => {},
+})
+
+export function DropdownMenu({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <MenuContext.Provider value={{ open, setOpen }}>
+      <div className="relative inline-block">{children}</div>
+    </MenuContext.Provider>
+  )
+}
+
+export function DropdownMenuTrigger({ className, children, ...props }: HTMLAttributes<HTMLButtonElement>) {
+  const { open, setOpen } = useContext(MenuContext)
+  return (
+    <button className={className} onClick={() => setOpen(!open)} {...props}>
+      {children}
+    </button>
+  )
+}
+
+export function DropdownMenuContent({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+  const { open, setOpen } = useContext(MenuContext)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!open) return
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open, setOpen])
+
+  if (!open) return null
+
+  return (
+    <div
+      ref={ref}
+      className={cn(
+        'absolute right-0 z-50 mt-1 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
+
+export function DropdownMenuItem({ className, children, onClick, ...props }: HTMLAttributes<HTMLDivElement>) {
+  const { setOpen } = useContext(MenuContext)
+  return (
+    <div
+      className={cn(
+        'relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none hover:bg-accent',
+        className,
+      )}
+      onClick={(e) => {
+        onClick?.(e)
+        setOpen(false)
+      }}
+      {...props}
+    >
+      {children}
+    </div>
+  )
+}
