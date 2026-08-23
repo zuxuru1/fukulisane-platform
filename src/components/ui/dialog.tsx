@@ -1,15 +1,81 @@
-import * as React from 'react'
-import * as DialogPrimitive from '@radix-ui/react-dialog'
-import { X } from 'lucide-react'
+import { useState, createContext, useContext, type HTMLAttributes, type ReactNode } from 'react'
 import { cn } from '@/lib/cn'
-const Dialog = DialogPrimitive.Root
-const DialogTrigger = DialogPrimitive.Trigger
-const DialogPortal = DialogPrimitive.Portal
-const DialogClose = DialogPrimitive.Close
-const DialogOverlay = React.forwardRef<...>(({ className, ...props }, ref) => <DialogPrimitive.Overlay ref={ref} className={cn('fixed inset-0 z-50 bg-black/80', className)} {...props} />)
-const DialogContent = React.forwardRef<...>(({ className, children, ...props }, ref) => <DialogPortal><DialogOverlay /><DialogPrimitive.Content ref={ref} className={cn('fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg sm:rounded-lg', className)} {...props}>{children}<DialogPrimitive.Close className='absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100'><X className='h-4 w-4' /><span className='sr-only'>Close</span></DialogPrimitive.Close></DialogPrimitive.Content></DialogPortal>)
-const DialogHeader = ({ className, ...props }) => <div className={cn('flex flex-col space-y-1.5 text-center sm:text-left', className)} {...props} />
-const DialogFooter = ({ className, ...props }) => <div className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)} {...props} />
-const DialogTitle = React.forwardRef<...>(({ className, ...props }, ref) => <DialogPrimitive.Title ref={ref} className={cn('text-lg font-semibold leading-none tracking-tight', className)} {...props} />)
-const DialogDescription = React.forwardRef<...>(({ className, ...props }, ref) => <DialogPrimitive.Description ref={ref} className={cn('text-sm text-muted-foreground', className)} {...props} />)
-export { Dialog, DialogPortal, DialogOverlay, DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogFooter, DialogTitle, DialogDescription }
+import { X } from 'lucide-react'
+
+const DialogContext = createContext<{ open: boolean; setOpen: (v: boolean) => void }>({
+  open: false,
+  setOpen: () => {},
+})
+
+interface DialogProps {
+  open?: boolean
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
+  children?: ReactNode
+}
+
+export function Dialog({ open: controlledOpen, defaultOpen = false, onOpenChange, children }: DialogProps) {
+  const [internalOpen, setInternalOpen] = useState(defaultOpen)
+  const open = controlledOpen ?? internalOpen
+  const setOpen = (v: boolean) => {
+    setInternalOpen(v)
+    onOpenChange?.(v)
+  }
+
+  return (
+    <DialogContext.Provider value={{ open, setOpen }}>
+      {children}
+    </DialogContext.Provider>
+  )
+}
+
+export function DialogTrigger({ children, className, ...props }: HTMLAttributes<HTMLButtonElement>) {
+  const { setOpen } = useContext(DialogContext)
+  return (
+    <button className={className} onClick={() => setOpen(true)} {...props}>
+      {children}
+    </button>
+  )
+}
+
+export function DialogContent({ className, children, ...props }: HTMLAttributes<HTMLDivElement>) {
+  const { open, setOpen } = useContext(DialogContext)
+  if (!open) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-black/50" onClick={() => setOpen(false)} />
+      <div
+        className={cn(
+          'relative z-50 grid w-full max-w-lg gap-4 rounded-lg border bg-background p-6 shadow-lg',
+          className,
+        )}
+        {...props}
+      >
+        {children}
+        <button
+          className="absolute right-4 top-4 rounded-sm opacity-70 hover:opacity-100"
+          onClick={() => setOpen(false)}
+        >
+          <X size={16} />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+export function DialogHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn('flex flex-col gap-1.5 text-center sm:text-left', className)} {...props} />
+}
+
+export function DialogTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
+  return <h2 className={cn('text-lg font-semibold leading-none tracking-tight', className)} {...props} />
+}
+
+export function DialogDescription({ className, ...props }: HTMLAttributes<HTMLParagraphElement>) {
+  return <p className={cn('text-sm text-muted-foreground', className)} {...props} />
+}
+
+export function DialogFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn('flex flex-col-reverse gap-2 sm:flex-row sm:justify-end', className)} {...props} />
+}
